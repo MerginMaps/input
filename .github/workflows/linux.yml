@@ -154,8 +154,8 @@ jobs:
 
       - name: run tests
         env:
-          TEST_MERGIN_URL: https://test.dev.merginmaps.com/
-          TEST_API_USERNAME: test_mobileapp
+          TEST_MERGIN_URL: https://app.dev.merginmaps.com/
+          TEST_API_USERNAME: testMobileCIAppDev
           TEST_API_PASSWORD: ${{ secrets.TEST_API_PASSWORD }}
           QT_QPA_PLATFORM: "offscreen"
         run: |
