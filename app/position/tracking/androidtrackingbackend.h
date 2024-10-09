@@ -29,17 +29,11 @@ class AndroidTrackingBackend : public AbstractTrackingBackend
 
     QList<QgsPoint> getAllUpdates() override;
 
-    void sourceUpdatedPosition();
-    void sourceUpdatedState( const QString &statusMessage );
-
   private:
     void setupForegroundUpdates();
 
     qreal mDistanceFilter = 0;
     qreal mUpdateInterval = 0; // ms
-
-    QString TRACKING_FILE_NAME = "tracking_updates.txt";
-    QFile mTrackingFile; // owned
 };
 
 #endif // ANDROIDTRACKINGBACKEND_H

@@ -17,6 +17,7 @@
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"/> <!-- Reading compass while taking a picture -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/> <!-- To be able to send notifications, Android 13+ -->
 
     <!-- Android considers EXIF data as sensitive (since they contain user's location), so we need to opt for permission ACCESS_MEDIA_LOCATION.
@@ -97,7 +98,7 @@
              </meta-data>
         </provider>
 
-        <service android:process=":trackingThread" android:name=".PositionTrackingService" android:foregroundServiceType="location" android:stopWithTask="true"/>
+        <service android:name=".PositionTrackingService" android:foregroundServiceType="location" android:exported="false" />
     </application>
 
     <!-- Explicitly mention that we need to use external app for capturing an image and open file-->
