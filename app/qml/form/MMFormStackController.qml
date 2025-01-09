@@ -15,9 +15,8 @@ Item {
 
   /*
    * MMFormsStackManager component is responsible for viewing feature forms, both preview and fullscreen form
-   * It contains a stackview where instances of FormWrapper are pushed. Latest form is not destroyed, but reused
-   * for next feature to reduce a cost of initializing form and AttributeController each time user selects feature.
-   */
+   * It contains a stackview where instances of FormWrapper are pushed.
+  */
 
   property var project
 
@@ -113,8 +112,7 @@ Item {
 
   function closeAll() {
     // close permanetly all drawers (not only hide)
-    let form = formsStack.get( 0 )
-    formsStack.pop( form )
+    formsStack.clear()
   }
 
   function reopenAll() {
@@ -257,11 +255,16 @@ Item {
     id: formsStack
 
     function popOneOrClose() {
-      formsStack.pop()
+      if ( formsStack.depth > 1 ) {
+        formsStack.pop()
+      }
+      else{
+        formsStack.clear()
+      }
 
-      if ( formsStack.depth <= 1 )
+      if ( formsStack.depth === 0 )
       {
-        root.closed() // this is the top most form, we want to keep it instantiated, just invisible
+        root.closed()
       }
     }
 
