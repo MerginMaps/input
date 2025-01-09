@@ -17,6 +17,7 @@
 #include "qgsmaplayer.h"
 #include "qgsmaplayerproxymodel.h"
 #include "qgsvectorlayer.h"
+#include "inpututils.h"
 
 #include "layersmodel.h"
 
@@ -48,6 +49,9 @@ class LayersProxyModel : public QgsMapLayerProxyModel
 
     //! Returns first layer from proxy model's layers list (filtered with filter function)
     Q_INVOKABLE QgsMapLayer *firstUsableLayer() const;
+
+    //! Returns true if the layer is the position tracking layer
+    Q_INVOKABLE bool isPositionTrackingLayer( QgsMapLayer *layer ) const;
 
     /**
      * @brief layers method return layers from source model filtered with filter function

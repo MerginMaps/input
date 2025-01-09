@@ -58,7 +58,7 @@ bool LayersProxyModel::recordingAllowed( QgsMapLayer *layer ) const
     return false;
 
   QgsVectorLayer *vectorLayer = qobject_cast<QgsVectorLayer *>( layer );
-  return ( vectorLayer && !vectorLayer->readOnly() && layerHasGeometry( vectorLayer ) && layerVisible( layer ) );
+  return ( vectorLayer && !vectorLayer->readOnly() && layerHasGeometry( vectorLayer ) && layerVisible( layer ) && !isPositionTrackingLayer( layer ) );
 }
 
 bool LayersProxyModel::layerVisible( QgsMapLayer *layer ) const
@@ -152,4 +152,18 @@ QgsVectorLayer *LayersProxyModel::layerFromLayerName( const QString &layerName )
 QVariant LayersProxyModel::getData( QModelIndex index, int role ) const
 {
   return sourceModel()->data( index, role );
+}
+
+bool LayersProxyModel::isPositionTrackingLayer( QgsMapLayer *layer ) const
+{
+  if ( !layer )
+    return false;
+
+  QgsProject *project = QgsProject::instance();
+
+  if ( !project )
+    return false;
+
+  QString trackingLayerId = project->readEntry( QStringLiteral( "Mergin" ), QStringLiteral( "PositionTracking/TrackingLayer" ), QString() );
+  return layer->id() == trackingLayerId;
 }
