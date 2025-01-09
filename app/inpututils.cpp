@@ -316,6 +316,25 @@ QPointF InputUtils::geometryCenterToScreenCoordinates( const QgsGeometry &geom, 
   return screenPoint;
 }
 
+bool InputUtils::canExtentContainGeometry( const QgsGeometry &geom, InputMapSettings *mapSettings )
+{
+  QPointF screenPoint;
+
+  if ( !mapSettings || geom.isNull() || !geom.constGet() )
+    return false;
+
+  QgsRectangle geomBbox = geom.boundingBox();
+  QgsRectangle currentExtent = mapSettings->mapSettings().extent();
+
+  if ( currentExtent.width() > geomBbox.width()
+       && currentExtent.height() > geomBbox.height() )
+  {
+    return true;
+  }
+  return false;
+}
+
+
 double InputUtils::convertCoordinateString( const QString &rationalValue )
 {
   QStringList values = rationalValue.split( "," );

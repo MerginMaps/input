@@ -1182,6 +1182,10 @@ Item {
     if ( identifyHighlight.geometry === null )
       return
 
+    if ( !__inputUtils.canExtentContainGeometry( identifyHighlight.geometry, mapCanvas.mapSettings ) ){
+      return
+    }
+
     let screenPt = __inputUtils.geometryCenterToScreenCoordinates( identifyHighlight.geometry, mapCanvas.mapSettings )
     screenPt.y += mapOffset / 2
     mapCanvas.jumpTo( screenPt )
