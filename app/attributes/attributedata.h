@@ -57,8 +57,10 @@ class FormItem
       int parentTabId,
       FormItem::FormItemType type,
       const QString &name,
+      const QgsExpression &nameExpression,
       bool showName,
       bool isEditable,
+      const QgsExpression &editableExpression,
       const QgsEditorWidgetSetup &editorWidgetSetup,
       int fieldIndex,
       const QgsExpression &visibilityExpression,
@@ -71,8 +73,10 @@ class FormItem
       const QString &groupName,
       int parentTabId,
       const QString &name,
+      const QgsExpression &nameExpression,
       bool showName,
       bool isEditable,
+      const QgsExpression &editableExpression,
       const QgsEditorWidgetSetup &editorWidgetSetup,
       int fieldIndex,
       const QgsExpression &visibilityExpression
@@ -109,8 +113,10 @@ class FormItem
     );
 
     FormItem::FormItemType type() const;
+
     QString name() const;
-    bool isEditable() const;
+    void setName( QString name );
+
     QString editorWidgetType() const;
     QVariantMap editorWidgetConfig() const;
     int fieldIndex() const;
@@ -121,6 +127,9 @@ class FormItem
     FieldValidator::ValidationStatus validationStatus() const;
     void setValidationStatus( FieldValidator::ValidationStatus status );
 
+    bool isEditable() const;
+    void setIsEditable( bool editable );
+
     bool isVisible() const;
     void setVisible( bool visible );
 
@@ -129,6 +138,8 @@ class FormItem
     int parentTabId() const;
 
     QgsExpression visibilityExpression() const;
+    QgsExpression nameExpression() const;
+    QgsExpression editableExpression() const;
 
     bool visible() const;
 
@@ -154,15 +165,17 @@ class FormItem
     const QString mGroupName; //empty for no group, group/tab name if widget is in container
     const int mParentTabId;
     const FormItem::FormItemType mType;
-    const QString mName;
     const bool mShowName = true; // "Show label" in Widget Display group in QGIS widget settings
-    const bool mIsEditable;
     const QgsEditorWidgetSetup mEditorWidgetSetup;
     const int mFieldIndex;
     const QgsExpression mVisibilityExpression;
+    const QgsExpression mNameExpression; // Expression to define field’s display name (alias)
+    const QgsExpression mEditableExpression; // Expression to determine whether the field is editable
 
+    QString mName;
     QString mValidationMessage;
     FieldValidator::ValidationStatus mValidationStatus = FieldValidator::Valid;
+    bool mIsEditable = true;
     bool mVisible = false;
     QVariant mOriginalValue; // original unmodified value
     QVariant mRawValue;
