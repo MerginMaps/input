@@ -21,6 +21,73 @@
 
 #include <qgsapplication.h>
 
+class MockReply : public QNetworkReply
+{
+  public:
+    explicit MockReply( const QNetworkRequest &request, QNetworkAccessManager::Operation operation,
+                        QObject *parent = nullptr, QNetworkReply::NetworkError errorCode = QNetworkReply::NoError )
+      : QNetworkReply( parent )
+    {
+      setRequest( request );
+      setOperation( operation );
+      setUrl( request.url() );
+
+      if ( errorCode != QNetworkReply::NoError )
+      {
+        setError( errorCode, "Mock network failure" );
+        QMetaObject::invokeMethod( this, "errorOccurred", Qt::QueuedConnection, Q_ARG( QNetworkReply::NetworkError, errorCode ) );
+      }
+
+      QMetaObject::invokeMethod( this, "finished", Qt::QueuedConnection );
+      open( QIODevice::ReadOnly );
+    }
+
+    void abort() override {}
+
+    qint64 readData( char *data, qint64 maxlen ) override
+    {
+      Q_UNUSED( data );
+      Q_UNUSED( maxlen );
+      return -1;
+    }
+
+    qint64 bytesAvailable() const override
+    {
+      return 0;
+    }
+};
+
+class MockNetworkManager : public QNetworkAccessManager
+{
+  public:
+    explicit MockNetworkManager( QObject *parent = nullptr )
+      : QNetworkAccessManager( parent )
+      , mShouldFail( false )
+      , mErrorCode( QNetworkReply::NoError )
+    {}
+
+    void setShouldFail( bool shouldFail, QNetworkReply::NetworkError errorCode = QNetworkReply::NoError )
+    {
+      mShouldFail = shouldFail;
+      mErrorCode = errorCode;
+    }
+
+  protected:
+    QNetworkReply *createRequest( Operation op, const QNetworkRequest &request, QIODevice *outgoingData = nullptr ) override
+    {
+      if ( mShouldFail )
+      {
+        auto *reply = new MockReply( request, op, this, mErrorCode );
+        return reply;
+      }
+      return QNetworkAccessManager::createRequest( op, request, outgoingData );
+    }
+
+  private:
+    bool mShouldFail;
+    QNetworkReply::NetworkError mErrorCode;
+};
+
 class TestMerginApi: public QObject
 {
     Q_OBJECT
@@ -40,6 +107,8 @@ class TestMerginApi: public QObject
     void testListProject();
     void testListProjectsByName();
     void testDownloadProject();
+    void testDownloadWithNetworkError();
+    void testDownloadWithNetworkErrorRecovery();
     void testDownloadProjectSpecChars();
     void testCancelDownloadProject();
     void testCreateProjectTwice();
