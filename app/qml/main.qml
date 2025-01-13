@@ -276,6 +276,7 @@ ApplicationWindow {
       MMToolbarButton {
         text: qsTr("Add")
         iconSource: __style.addIcon
+        visible: __activeProject.projectRole !== "reader"
         onClicked: {
           if ( __recordingLayersModel.rowCount() > 0 ) {
             stateManager.state = "map"

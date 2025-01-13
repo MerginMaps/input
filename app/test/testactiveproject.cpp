@@ -39,7 +39,7 @@ void TestActiveProject::testProjectValidations()
   ActiveLayer al;
   LayersModel lm;
   LayersProxyModel lpm( &lm, LayerModelTypes::ActiveLayerSelection );
-  ActiveProject activeProject( as, al, lpm, mApi->localProjectsManager() );
+  ActiveProject activeProject( as, al, lpm, mApi->localProjectsManager(), mApi );
 
   QSignalSpy spyReportIssues( &activeProject, &ActiveProject::reportIssue );
   QSignalSpy spyErrorsFound( &activeProject, &ActiveProject::loadingErrorFound );
@@ -66,7 +66,7 @@ void TestActiveProject::testProjectLoadFailure()
   ActiveLayer al;
   LayersModel lm;
   LayersProxyModel lpm( &lm, LayerModelTypes::ActiveLayerSelection );
-  ActiveProject activeProject( as, al, lpm, mApi->localProjectsManager() );
+  ActiveProject activeProject( as, al, lpm, mApi->localProjectsManager(), mApi );
 
   mApi->localProjectsManager().addLocalProject( projectdir, projectname );
 
@@ -88,7 +88,7 @@ void TestActiveProject::testPositionTrackingFlag()
   ActiveLayer al;
   LayersModel lm;
   LayersProxyModel lpm( &lm, LayerModelTypes::ActiveLayerSelection );
-  ActiveProject activeProject( as, al, lpm, mApi->localProjectsManager() );
+  ActiveProject activeProject( as, al, lpm, mApi->localProjectsManager(), mApi );
 
   // project "planes" - tracking not enabled
   QString projectDir = TestUtils::testDataDir() + "/planes/";

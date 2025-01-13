@@ -31,6 +31,7 @@ ActiveProject::ActiveProject( AppSettings &appSettings
                               , ActiveLayer &activeLayer
                               , LayersProxyModel &recordingLayerPM
                               , LocalProjectsManager &localProjectsManager
+                              , MerginApi *merginApi
                               , QObject *parent ) :
 
   QObject( parent )
@@ -38,6 +39,7 @@ ActiveProject::ActiveProject( AppSettings &appSettings
   , mActiveLayer( activeLayer )
   , mRecordingLayerPM( recordingLayerPM )
   , mLocalProjectsManager( localProjectsManager )
+  , mMerginApi( merginApi )
   , mProjectLoadingLog( "" )
 {
   // we used to have our own QgsProject instance, but unfortunately few pieces of qgis_core
@@ -74,6 +76,24 @@ ActiveProject::ActiveProject( AppSettings &appSettings
   setAutosyncEnabled( mAppSettings.autosyncAllowed() );
 
   QObject::connect( &mAppSettings, &AppSettings::autosyncAllowedChanged, this, &ActiveProject::setAutosyncEnabled );
+
+  QObject::connect(
+    mMerginApi,
+    &MerginApi::projectMetadataRoleUpdated,
+    this, [this]( const QString & projectFullName, const QString & role )
+  {
+    if ( projectFullName == this->projectFullName() )
+    {
+      setProjectRole( role );
+    }
+  } );
+
+  QObject::connect(
+    mMerginApi,
+    &MerginApi::authChanged,
+    this,
+    &ActiveProject::updateUserRoleInActiveProject
+  );
 }
 
 ActiveProject::~ActiveProject() = default;
@@ -188,6 +208,7 @@ bool ActiveProject::forceLoad( const QString &filePath, bool force )
     updateRecordingLayers();
     updateActiveLayer();
     updateMapSettingsLayers();
+    updateUserRoleInActiveProject();
 
     emit localProjectChanged( mLocalProject );
     emit projectReloaded( mQgsProject );
@@ -552,4 +573,25 @@ bool ActiveProject::positionTrackingSupported() const
   }
 
   return mQgsProject->readBoolEntry( QStringLiteral( "Mergin" ), QStringLiteral( "PositionTracking/Enabled" ), false );
+}
+
+QString ActiveProject::projectRole() const
+{
+  return mProjectRole;
+}
+
+void ActiveProject::setProjectRole( const QString &role )
+{
+  if ( mProjectRole != role )
+  {
+    mProjectRole = role;
+
+    emit projectRoleChanged();
+  }
+}
+
+void ActiveProject::updateUserRoleInActiveProject()
+{
+  // update user's role each time a project is opened or auth changes, following #3174
+  mMerginApi->updateProjectMetadataRole( projectFullName() );
 }

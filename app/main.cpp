@@ -494,7 +494,7 @@ int main( int argc, char *argv[] )
   LayersProxyModel recordingLpm( &lm, LayerModelTypes::ActiveLayerSelection );
 
   ActiveLayer al;
-  ActiveProject activeProject( as, al, recordingLpm, localProjectsManager );
+  ActiveProject activeProject( as, al, recordingLpm, localProjectsManager, ma.get() );
   std::unique_ptr<VariablesManager> vm( new VariablesManager( ma.get() ) );
   vm->registerInputExpressionFunctions();
 

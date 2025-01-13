@@ -103,6 +103,7 @@ Drawer {
         }
 
         text: qsTr( "Add feature" )
+        visible: __activeProject.projectRole !== "reader"
 
         onClicked: root.buttonClicked()
       }

@@ -295,7 +295,7 @@ Item {
     property bool isHTMLType: root.controller.type === MM.AttributePreviewController.HTML
     property bool isEmptyType: root.controller.type === MM.AttributePreviewController.Empty
 
-    property bool showEditButton: !root.layerIsReadOnly
+    property bool showEditButton: !root.layerIsReadOnly && __activeProject.projectRole !== "reader"
     property bool showStakeoutButton: __inputUtils.isPointLayerFeature( controller.featureLayerPair )
     property bool showButtons: showEditButton || showStakeoutButton
 

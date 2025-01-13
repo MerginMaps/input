@@ -79,6 +79,7 @@ class TestMerginApi: public QObject
     void testSynchronizationViaManager();
     void testAutosync();
     void testAutosyncFailure();
+    void testUpdateProjectMetadataRole();
 
     void testRegisterAndDelete();
     void testCreateWorkspace();

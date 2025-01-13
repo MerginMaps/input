@@ -3449,6 +3449,45 @@ bool MerginApi::writeData( const QByteArray &data, const QString &path )
   return true;
 }
 
+bool MerginApi::updateCachedProjectRole( const QString &projectFullName, const QString &newRole )
+{
+  LocalProject project = mLocalProjects.projectFromMerginName( projectFullName );
+  if ( !project.isValid() )
+  {
+    return false;
+  }
+
+  QString metadataPath = project.projectDir + "/" + sMetadataFile;
+
+  QFile file( metadataPath );
+  if ( !file.open( QIODevice::ReadOnly ) )
+  {
+    return false;
+  }
+
+  QByteArray data = file.readAll();
+  file.close();
+
+  QJsonDocument doc = QJsonDocument::fromJson( data );
+  if ( !doc.isObject() )
+  {
+    return false;
+  }
+
+  QJsonObject obj = doc.object();
+  obj["role"] = newRole;
+  doc.setObject( obj );
+
+  if ( !file.open( QIODevice::WriteOnly ) )
+  {
+    return false;
+  }
+
+  bool success = ( file.write( doc.toJson() ) != -1 );
+  file.close();
+
+  return success;
+}
 
 void MerginApi::createPathIfNotExists( const QString &filePath )
 {
@@ -3945,3 +3984,71 @@ DownloadQueueItem::DownloadQueueItem( const QString &fp, qint64 s, int v, qint64
   tempFileName = CoreUtils::uuidWithoutBraces( QUuid::createUuid() );
 }
 
+void MerginApi::updateProjectMetadataRole( const QString &projectFullName )
+{
+  if ( projectFullName.isEmpty() )
+  {
+    return;
+  }
+
+  QString cachedRole = MerginApi::getCachedProjectRole( projectFullName );
+
+  QNetworkReply *reply = getProjectInfo( projectFullName );
+  if ( !reply )
+  {
+    emit projectMetadataRoleUpdated( projectFullName, cachedRole );
+    return;
+  }
+
+  reply->request().setAttribute( static_cast<QNetworkRequest::Attribute>( AttrProjectFullName ), projectFullName );
+  connect( reply, &QNetworkReply::finished, this, &MerginApi::updateProjectMetadataRoleReplyFinished );
+}
+
+void MerginApi::updateProjectMetadataRoleReplyFinished()
+{
+  QNetworkReply *r = qobject_cast<QNetworkReply *>( sender() );
+  Q_ASSERT( r );
+
+  QString projectFullName = r->request().attribute( static_cast<QNetworkRequest::Attribute>( AttrProjectFullName ) ).toString();
+  QString cachedRole = MerginApi::getCachedProjectRole( projectFullName );
+
+  if ( r->error() == QNetworkReply::NoError )
+  {
+    QByteArray data = r->readAll();
+    MerginProjectMetadata serverProject = MerginProjectMetadata::fromJson( data );
+    QString role = serverProject.role;
+
+    if ( role != cachedRole )
+    {
+      if ( updateCachedProjectRole( projectFullName, role ) )
+      {
+        emit projectMetadataRoleUpdated( projectFullName, role );
+      }
+      else
+      {
+        CoreUtils::log( "metadata", QString( "Failed to update cached role for project %1" ).arg( projectFullName ) );
+      }
+    }
+  }
+  else
+  {
+    emit projectMetadataRoleUpdated( projectFullName, cachedRole );
+  }
+
+  r->deleteLater();
+}
+
+QString MerginApi::getCachedProjectRole( const QString &projectFullName ) const
+{
+  if ( projectFullName.isEmpty() )
+    return QString();
+
+  QString projectDir = mLocalProjects.projectFromMerginName( projectFullName ).projectDir;
+
+  if ( projectDir.isEmpty() )
+    return QString();
+
+  MerginProjectMetadata cachedProjectMetadata = MerginProjectMetadata::fromCachedJson( projectDir + "/" + sMetadataFile );
+
+  return cachedProjectMetadata.role;
+}
